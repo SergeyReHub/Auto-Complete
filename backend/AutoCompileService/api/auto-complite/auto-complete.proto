@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package auto_complete;
+
+option go_package = "internal/api";
+
+message AutoCompleteRequest {
+  string originalString = 1;
+}
+
+message AutoCompleteResponse{
+  repeated string PrepositionsStrings = 1;
+}
+
+service AutoCompleteService{
+  rpc AutoComplete(AutoCompleteRequest) returns (AutoCompleteResponse);
+}
