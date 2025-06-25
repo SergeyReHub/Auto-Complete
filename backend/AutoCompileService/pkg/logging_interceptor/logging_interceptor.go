@@ -1,8 +1,10 @@
 package logging_interceptor
 
 import (
+	"auto_complite/internal/config"
 	"context"
 	"fmt"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
