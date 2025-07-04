@@ -2,7 +2,10 @@ FROM golang:1.25rc1-alpine3.21 AS builder
 WORKDIR /auto-complete-service
 
 COPY go.mod go.sum ./
-RUN go.mod download
+RUN go mod download
+
+RUN apk update
+RUN apk add make # install make
 
 COPY . .
 RUN make build

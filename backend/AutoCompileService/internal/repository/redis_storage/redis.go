@@ -4,6 +4,7 @@ import (
 	"auto_complite/internal/config"
 	"context"
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/redis/go-redis/v9"
@@ -23,7 +24,7 @@ func RedisInit(ctx context.Context, cfg *config.Config, logger *zap.Logger) (Red
 	})
 
 	if err := redisClient.Ping(ctx).Err(); err != nil {
-		return nil, errors.New("DB Redis error. Init Redis error.\n" + err.Error())
+		return nil, errors.New("DB Redis error. Init Redis error. Addr: " + cfg.Redis.Addr + " Passwd: " + cfg.Redis.Password + " DB: " + strconv.Itoa(cfg.Redis.DB) + " " + err.Error())
 	}
 	return &RedisStorage{
 		Client: redisClient, // Просто сохраняем *redis.Client
@@ -59,11 +60,11 @@ func (s *RedisStorage) GetSimilarsFromCache(ctx context.Context, str string) ([]
 		return nil, errors.New("DB Redis error. Get similars error.\n" + err.Error())
 	}
 	var sliceContainsSubstr []string
-	for _, v := range slice{
-		if strings.Contains(v, str){
+	for _, v := range slice {
+		if strings.HasPrefix(v, str) {
 			sliceContainsSubstr = append(sliceContainsSubstr, v)
 		}
 	}
 	s.SetNewCasheSlice(ctx, sliceContainsSubstr)
-	return slice, nil
+	return sliceContainsSubstr, nil
 }

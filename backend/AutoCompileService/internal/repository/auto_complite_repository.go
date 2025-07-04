@@ -28,12 +28,10 @@ func (r *Repository) FindSimilar(ctx context.Context, originStr string) ([]strin
 			r.Logger.Error("Find similars error.", zap.Error(err))
 			return nil, errors.New("Find similars error." + err.Error())
 		}
-		if len(slice) != 0 {
-			err = r.RedisStorage.SetNewCasheSlice(ctx, slice)
-			if err != nil {
-				r.Logger.Error("Find similars error.", zap.Error(err))
-				return nil, errors.New("Find similars error." + err.Error())
-			}
+		err = r.RedisStorage.SetNewCasheSlice(ctx, slice)
+		if err != nil {
+			r.Logger.Error("Find similars error.", zap.Error(err))
+			return nil, errors.New("Find similars error." + err.Error())
 		}
 	}
 	return slice, nil

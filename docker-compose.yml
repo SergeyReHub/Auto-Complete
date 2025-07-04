@@ -5,15 +5,23 @@ services:
     build: ./backend/AutoCompileService
     # network: auto-complete
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "grpcurl", "-plaintext", "localhost:50053", "list"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    ports:
+      - "50053:50053"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
   
   db:
     image: postgres:latest
-    container_name: auto-comlete-db
+    container_name: auto-complete-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
@@ -22,11 +30,11 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - autocomplete_data:/var/lib/postgresql/data/pgdata
-      - /backend/AutoCompileService/internal/migrations/postgres-data
+      - autocomplete_data:/var/lib/postgresql/data
+      - ./backend/AutoCompileService/internal/migrations/postgres-data:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db" ]
-      interval: 30s
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d autocomplete-db" ]
+      interval: 10s
       timeout: 10s
       retries: 5
     restart: unless-stopped
@@ -35,17 +43,19 @@ services:
     image: redis:6.2.6-alpine
     container_name: redis-container
     # network: auto-complete
-    environment:
-      REDIS_PASSWORD: admin
+    command: [ "redis-server", "--requirepass", "admin" ]
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      test: ["CMD", "redis-cli", "-a", "admin", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 networks:
   auto-complete:
+volumes:
+  autocomplete_data:
+  redis-data:

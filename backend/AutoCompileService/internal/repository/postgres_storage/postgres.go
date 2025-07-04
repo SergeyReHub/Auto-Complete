@@ -30,15 +30,15 @@ func (p *PostgresStorage) GetSimilarsFromDb(ctx context.Context, str string) ([]
 	conn, err := p.Pool.Acquire(ctx)
 	if err != nil {
 		p.Logger.Error("DB Postgres error. Create connection error.", zap.Error(err))
-		return nil, errors.New("DB Postgres error. Create connection error.\n" + err.Error())
+		return nil, errors.New("DB Postgres error. Create connection error. " + err.Error())
 	}
 	defer conn.Release()
 
-	rows, err := conn.Query(ctx, "SELECT * from list_default_phrases WHERE phrase ILIKE '%$1%'", str)
+	rows, err := conn.Query(ctx, "SELECT phrase FROM list_default_phrases WHERE phrase ILIKE "+"'"+str+"%'")
 	defer rows.Close()
 	if err != nil {
 		p.Logger.Error("DB Postgres error. Query GetSimilars error.", zap.String("string to find similars", str))
-		return nil, errors.New("DB Postgres error. Query GetSimilars error.\n" + err.Error())
+		return nil, errors.New("DB Postgres error. Query GetSimilars error. " + err.Error())
 	}
 	var phrases []string
 	for rows.Next() {
@@ -46,7 +46,7 @@ func (p *PostgresStorage) GetSimilarsFromDb(ctx context.Context, str string) ([]
 		err = rows.Scan(&phrase)
 		if err != nil {
 			p.Logger.Error("DB Postgres error. Row scan error.", zap.Error(err))
-			return nil, errors.New("DB Postgres error. Row scan error.\n" + err.Error())
+			return nil, errors.New("DB Postgres error. Row scan error. " + err.Error())
 		}
 		phrases = append(phrases, phrase)
 	}
