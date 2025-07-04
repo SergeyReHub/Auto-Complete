@@ -1,0 +1,51 @@
+name: auto-complete
+
+services:
+  auto-complete-service:
+    build: ./backend/AutoCompileService
+    # network: auto-complete
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  
+  db:
+    image: postgres:latest
+    container_name: auto-comlete-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: autocomplete-db
+    # network: auto-complete
+    ports:
+      - "5432:5432"
+    volumes:
+      - autocomplete_data:/var/lib/postgresql/data/pgdata
+      - /backend/AutoCompileService/internal/migrations/postgres-data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:6.2.6-alpine
+    container_name: redis-container
+    # network: auto-complete
+    environment:
+      REDIS_PASSWORD: admin
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+networks:
+  auto-complete:

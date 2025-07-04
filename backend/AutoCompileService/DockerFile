@@ -7,7 +7,7 @@ RUN go.mod download
 COPY . .
 RUN make build
 
-FROM alfine:3.21
+FROM alpine:3.21
 WORKDIR /auto-complete-service
 
 ENV CONFIG_DIR=internal/config

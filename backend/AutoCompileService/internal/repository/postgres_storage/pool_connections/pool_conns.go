@@ -9,12 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type DatabaseConnector struct {
-	Pool *pgxpool.Pool
-}
-
 // CreatePool creates a connection pool to the database.
-func CreatePool(cfg *config.DB) (*DatabaseConnector, error) {
+func CreatePool(cfg *config.DB) (*pgxpool.Pool, error) {
 	log.Println(cfg.ConnStr())
 	config, err := pgxpool.ParseConfig(cfg.ConnStr())
 	if err != nil {
@@ -35,5 +31,5 @@ func CreatePool(cfg *config.DB) (*DatabaseConnector, error) {
 
 	log.Println("Connection pool established successfully.")
 
-	return &DatabaseConnector{Pool: pool}, nil
+	return pool, nil
 }
